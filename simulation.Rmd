@@ -1,0 +1,127 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+
+<style type="text/css">
+
+body{ /* Normal  */
+      font-size: 12px;
+  }
+td {  /* Table  */
+  font-size: 8px;
+}
+h1.title {
+  font-size: 38px;
+  color: DarkRed;
+}
+h1 { /* Header 1 */
+  font-size: 28px;
+  color: DarkBlue;
+}
+</style>
+
+The simulation that I use is:
+\( X \sim N_{20}(0, \Sigma ), \ \ \ \ \epsilon \sim N(0, 0.1^2) \) \
+correlation = 0.6 \
+m = 0.09\
+\( y_1 = m*X_1 + m*X_{10} + m*X_{19} + m*X_{20} + \epsilon  \) \
+
+```{r}
+corrplot( cor(sam) )
+```
+
+## The Traditional Boruta.
+
+```{r, echo=FALSE}
+print(final.boruta)
+```
+
+
+```{r}
+getSelectedAttributes(final.boruta, withTentative = F)
+```
+
+```{r}
+print(attStats(final.boruta))
+```
+
+```{r}
+plot(bb, xlab = "", xaxt = "n")
+lz<-lapply(1:ncol(bb$ImpHistory),function(i) bb$ImpHistory[is.finite(bb$ImpHistory[,i]),i])
+names(lz) <- colnames(bb$ImpHistory)
+Labels <- sort(sapply(lz,median))
+axis(side = 1,las=2,labels = names(Labels),at = 1:ncol(bb$ImpHistory), cex.axis = 0.7)
+
+```
+
+
+
+
+## The Conditional Boruta
+
+```{r}
+print(final.boruta_cond)
+```
+
+```{r}
+getSelectedAttributes(final.boruta_cond, withTentative = F)
+```
+
+
+```{r}
+plot(bb_cond, xlab = "", xaxt = "n")
+lz<-lapply(1:ncol(bb_cond$ImpHistory),function(i) bb_cond$ImpHistory[is.finite(bb_cond$ImpHistory[,i]),i])
+names(lz) <- colnames(bb_cond$ImpHistory)
+Labels <- sort(sapply(lz,median))
+axis(side = 1,las=2,labels = names(Labels),at = 1:ncol(bb_cond$ImpHistory), cex.axis = 0.7)
+```
+
+
+
+# Second simulation
+correlation = 0.8 \
+correlation = 0.7 \
+m = 0.9\
+\( y_1 = m*X_2 + m*X_{11}  + epsilon  \) \
+
+```{r}
+corrplot( cor(sam) )
+```
+
+## Traditional Boruta
+```{r, echo=FALSE}
+print(final.boruta)
+```
+
+
+```{r}
+getSelectedAttributes(final.boruta, withTentative = F)
+```
+
+```{r}
+print(attStats(final.boruta_cond))
+```
+
+
+## Conditional Boruta
+
+
+```{r}
+print(final.boruta_cond)
+```
+
+```{r}
+getSelectedAttributes(final.boruta_cond, withTentative = F)
+```
+
+
+```{r}
+print(attStats(final.boruta_cond))
+```
+
+
+
+
+
