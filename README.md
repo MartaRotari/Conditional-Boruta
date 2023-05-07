@@ -28,3 +28,10 @@ The function file contain the following features:
 3. 'getSelectedAttributes()': function that give the subset of the selected variables
 4. 'plotImpHistory()': the mean of the variable importance value calculated at each step of the algorithm
 5. 'plot.Boruta()': boxplo of the variables conditional importances
+
+
+### Credits
+This repository includes code from the following third-party sources:
+
+[Boruta](https://cran.r-project.org/web/packages/Boruta/index.html) - a package for feature selection in R. The original code for Boruta can be found at [https://gitlab.com/mbq/Boruta/](https://gitlab.com/mbq/Boruta/).
+
