@@ -33,5 +33,7 @@ The function file contain the following features:
 ### Credits
 This repository includes code from the following third-party sources:
 
-[Boruta](https://cran.r-project.org/web/packages/Boruta/index.html) - a package for feature selection in R. The original code for Boruta can be found at [https://gitlab.com/mbq/Boruta/](https://gitlab.com/mbq/Boruta/).
+[Boruta](https://cran.r-project.org/web/packages/Boruta/index.html) - a package for feature selection in R. 
+
+The original code for Boruta can be found at [https://gitlab.com/mbq/Boruta/](https://gitlab.com/mbq/Boruta/).
 
