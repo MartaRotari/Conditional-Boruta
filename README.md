@@ -1,39 +1,29 @@
-# Variable selection wrapper in presence of correlated input variables for Random Forest models, Conditional Boruta
+# Variable selection method in the presence of correlated input variables
+
+It is a variable selection method developed as a wrapper around the random forest model. Its purpose is to address the challenges posed by highly correlated input data, extending the original version of the Boruta model. For more details, please find a full description [here](document.pdf). 
+
 ## Highlights
-• A novel method for variable selection problem for highly correlated input data
-
-• The method is developed for a very commonly used machine learning model, namely Random Forest model
-
-• Use of Conditional Variable importance measure based on the Random Forest model
-
-• Select all the relevant variables among the input variables that are most relevant for predicting the output variable
-
-• Use of simulated data to validate the approach, comparing the results with standard approaches with embedded variable selection algorithms
-
-We compared the algorithm with the Lasso and Eastic net algorithm along with the original version of the Boruta algorithm. The ratio between the variables correctly selected/ wrongly selected variables related to the increasing correlation level. As the correlation increase the Conditional version of the Boruta algorithm.
-
+* The model is a variable selection method designed for highly correlated data
+* It is designed as a wrapper around the Random Forest model, providing a powerful and effective solution to the challenges posed by variables selection
+* The model has been developed to address the unique complexities that arise from highly correlated input data, thereby enabling the identification of the most relevant variables.
+* Rigorous evaluation of the model against established methods such as Lasso, Elastic net, VSURF, and Knockoffs variable selection has demonstrated its effectiveness.
 
 ## Example 
-An example on how to run and the outcome of the algorithm can be seen here.
+An example of how to run the function and analyse the outcome of the algorithm can be seen here.
+
 
 ## Summary
-The repository contain:
-1. 'boruta_conditional.R': function need be read with R command 'source(boruta_conditional.R)' and than call with 
-2. 'example_howtouse.R': simple example on how to use the function. 
+The repository contains the following:
+1. 'boruta_conditional.R': function needs to be read with the R command 'source(boruta_conditional.R)'.
+2. 'example_howtouse.R': a simple example of how to use the function. 
+3. More details can be found in the [paper](document.pdf).
+4. The comparison of the model to the established methods and a suggestion on how to choose the [parameters](parameters_comparison.pdf). 
+
 
 ## Function Features
-The function file contain the following features:
-1.'Condition_Boruta(y ~ . , data = data, doTrace = 1, getImp=getImpRfCond)' algorithm funtion
-2. 'TentativeRoughFix()': function that fix the variables not yet classified
-3. 'getSelectedAttributes()': function that give the subset of the selected variables
+The function file contains the following features:
+1.'Condition_Boruta(y ~ . , data = data, doTrace = 1, getImp=getImpRfCond)' algorithm function
+2. 'TentativeRoughFix()': the function that fixes the variables not yet classified
+3. 'getSelectedAttributes()': the function that gives the subset of the selected variables
 4. 'plotImpHistory()': the mean of the variable importance value calculated at each step of the algorithm
-5. 'plot.Boruta()': boxplo of the variables conditional importances
-
-
-### Credits
-This repository includes code from the following third-party sources:
-
-[Boruta](https://cran.r-project.org/web/packages/Boruta/index.html) - a package for feature selection in R. 
-
-The original code for Boruta can be found at [https://gitlab.com/mbq/Boruta/](https://gitlab.com/mbq/Boruta/).
-
+5. 'plot.Boruta()': boxplot of the variables' conditional importance

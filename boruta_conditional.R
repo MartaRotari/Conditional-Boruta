@@ -3,7 +3,7 @@ Condition_Boruta<-function(x,...)
   UseMethod("Boruta")
 
 
-Boruta.default<-function(x,y,pValue=0.01,mcAdj=TRUE,maxRuns=100,doTrace=0,holdHistory=TRUE,getImp=getImpRfCond,...){
+Boruta.default<-function(x,y,pValue=0.01,mcAdj=TRUE,maxRuns=100,doTrace=0,holdHistory=TRUE,getImp=getImpRfCond,ntree=500,mtry=20,...){
   #Timer starts... now!
   timeStart<-Sys.time()
   
@@ -39,7 +39,7 @@ Boruta.default<-function(x,y,pValue=0.01,mcAdj=TRUE,maxRuns=100,doTrace=0,holdHi
       message(sprintf(' %s. run of importance source...',runs))
     
     #Calling importance source; "..." can be used by the user to pass rf attributes (for instance ntree)
-    impRaw<-getImp(cbind(x[,decReg!="Rejected"],xSha),y,...)
+    impRaw<-getImp(cbind(x[,decReg!="Rejected"],xSha),y,ntree,mtry,...)
     if(!is.numeric(impRaw))
       stop("getImp result is not a numeric vector. Please check the given getImp function.")
     if(length(impRaw)!=sum(decReg!="Rejected")+ncol(xSha))
@@ -206,9 +206,9 @@ comment(getImpLegacyRfcond)<-'randomForest conditional permutation importance'
 
 
 
-getImpRfCond<-function(x,y,ntree=500,num.trees=ntree,...){
+getImpRfCond<-function(x,y,num.trees=ntree,num.mtry=mtry,...){
   x$shadow.Boruta.decision<-y
-  rff <- party::cforest(shadow.Boruta.decision~., data = x, control = party::cforest_unbiased(mtry = 20, ntree = num.trees))
+  rff <- party::cforest(shadow.Boruta.decision~., data = x, control = party::cforest_unbiased(mtry = num.mtry, ntree = num.trees))
   permimp::permimp(rff, conditional = TRUE, progressBar = FALSE)$values
 }
 comment(getImpRfCond)<-'ranger conditional permutation importance'
@@ -322,7 +322,21 @@ attStats<-function(x){
   return(st)
 }
 
-
+#' Extract names of the selected attributes
+#'
+#' \code{getSelectedAttributes} returns a vector of names of attributes selected during a Boruta run.
+#' @param x an object of a class Boruta, from which relevant attributes names should be extracted.
+#' @param withTentative if set to \code{TRUE}, Tentative attributes will be also returned.
+#' @return A character vector with names of the relevant attributes.
+#' @export
+#' @examples
+#' \dontrun{
+#' data(iris)
+#' #Takes some time, so be patient
+#' Boruta(Species~.,data=iris,doTrace=2)->Bor.iris
+#' print(Bor.iris)
+#' print(getSelectedAttributes(Bor.iris))
+#' }
 getSelectedAttributes<-function(x,withTentative=FALSE){
   if(class(x)!='Boruta') stop('This function needs Boruta object as an argument.')
   names(x$finalDecision)[
@@ -330,7 +344,29 @@ getSelectedAttributes<-function(x,withTentative=FALSE){
   ]
 }
 
-
+#' Rough fix of Tentative attributes
+#'
+#' In some circumstances (too short Boruta run, unfortunate mixing of shadow attributes, tricky dataset\ldots), Boruta can leave some attributes Tentative.
+#' \code{TentativeRoughFix} performs a simplified, weaker test for judging such attributes.
+#' @param x an object of a class Boruta.
+#' @param averageOver Either number of last importance source runs to
+#' average over or Inf for averaging over the whole Boruta run.
+#' @return A Boruta class object with modified \code{finalDecision} element.
+#' Such object has few additional elements:
+#' \item{originalDecision}{Original \code{finalDecision}.}
+#' \item{averageOver}{Copy of \code{averageOver} parameter.}
+#' @details Function claims as Confirmed those attributes that
+#' have median importance higher than the median importance of
+#' maximal shadow attribute, and the rest as Rejected.
+#' Depending of the user choice, medians for the test
+#' are count over last round, all rounds or N last
+#' importance source runs.
+#' @note This function should be used only when strict decision is
+#' highly desired, because this test is much weaker than Boruta
+#' and can lower the confidence of the final result.
+#' @note \code{x} has to be made with \code{holdHistory} set to
+#' \code{TRUE} for this code to run.
+#' @export
 TentativeRoughFix<-function(x,averageOver=Inf){
   if(!inherits(x,'Boruta'))
     stop('This function needs Boruta object as an argument.')
@@ -385,7 +421,31 @@ generateCol<-function(x,colCode,col,numShadow){
   return(col)
 }
 
-
+#' Plot Boruta object
+#'
+#' Default plot method for Boruta objects, showing boxplots of attribute importances over run.
+#' @method plot Boruta
+#' @param x an object of a class Boruta.
+#' @param colCode a vector containing colour codes for attribute decisions, respectively Confirmed, Tentative, Rejected and shadow.
+#' @param sort controls whether boxplots should be ordered, or left in original order.
+#' @param whichShadow a logical vector controlling which shadows should be drawn; switches respectively max shadow, mean shadow and min shadow.
+#' @param col standard \code{col} attribute. If given, suppresses effects of \code{colCode}.
+#' @param xlab X axis label that will be passed to \code{\link{boxplot}}.
+#' @param ylab Y axis label that will be passed to \code{\link{boxplot}}.
+#' @param ... additional graphical parameter that will be passed to \code{\link{boxplot}}.
+#' @note If \code{col} is given and \code{sort} is \code{TRUE}, the \code{col} will be permuted, so that its order corresponds to attribute order in \code{ImpHistory}.
+#' @note This function will throw an error when \code{x} lacks importance history, i.e., was made with \code{holdHistory} set to \code{FALSE}.
+#' @return Invisible copy of \code{x}.
+#' @examples
+#' \dontrun{
+#' library(mlbench); data(HouseVotes84)
+#' na.omit(HouseVotes84)->hvo
+#' #Takes some time, so be patient
+#' Boruta(Class~.,data=hvo,doTrace=2)->Bor.hvo
+#' print(Bor.hvo)
+#' plot(Bor.hvo)
+#' }
+#' @export
 plot.Boruta<-function(x,colCode=c('green','yellow','red','blue'),sort=TRUE,whichShadow=c(TRUE,TRUE,TRUE),
                       col=NULL,xlab='Attributes',ylab='Importance',...){
   #Checking arguments
@@ -411,15 +471,34 @@ plot.Boruta<-function(x,colCode=c('green','yellow','red','blue'),sort=TRUE,which
     lz[ii]->lz; col<-col[ii]
   }
   
-  Labels <- sort(sapply(lz,median))
-  
   #Final plotting
-  graphics::boxplot(lz,xlab = "", xaxt = "n",ylab=ylab,col=col,...)
-  graphics::axis(side = 1,las=2,labels = names(Labels),at = 1:ncol(cb$ImpHistory), cex.axis = 0.7)
+  graphics::boxplot(lz,xlab=xlab,ylab=ylab,col=col,...)
   invisible(x)
 }
 
-
+#' Plot Boruta object as importance history
+#'
+#' Alternative plot method for Boruta objects, showing matplot of attribute importances over run.
+#' @param x an object of a class Boruta.
+#' @param colCode a vector containing colour codes for attribute decisions, respectively Confirmed, Tentative, Rejected and shadow.
+#' @param col standard \code{col} attribute, passed to \code{\link{matplot}}. If given, suppresses effects of \code{colCode}.
+#' @param type Plot type that will be passed to \code{\link{matplot}}.
+#' @param lty Line type that will be passed to \code{\link{matplot}}.
+#' @param pch Point mark type that will be passed to \code{\link{matplot}}.
+#' @param xlab X axis label that will be passed to \code{\link{matplot}}.
+#' @param ylab Y axis label that will be passed to \code{\link{matplot}}.
+#' @param ... additional graphical parameter that will be passed to \code{\link{matplot}}.
+#' @note This function will throw an error when \code{x} lacks importance history, i.e., was made with \code{holdHistory} set to \code{FALSE}.
+#' @return Invisible copy of \code{x}.
+#' @examples
+#' \dontrun{
+#' library(mlbench); data(Sonar)
+#' #Takes some time, so be patient
+#' Boruta(Class~.,data=Sonar,doTrace=2)->Bor.son
+#' print(Bor.son)
+#' plotImpHistory(Bor.son)
+#' }
+#' @export
 plotImpHistory<-function(x,colCode=c('green','yellow','red','blue'),col=NULL,type="l",lty=1,pch=0,
                          xlab='Classifier run',ylab='Importance',...){
   #Checking arguments
@@ -434,7 +513,15 @@ plotImpHistory<-function(x,colCode=c('green','yellow','red','blue'),col=NULL,typ
   invisible(x)
 }
 
-
+#' Export Boruta result as a formula
+#'
+#' Functions which convert the Boruta selection into a formula, so that it could be passed further to other functions.
+#' @param x an object of a class Boruta, made using a formula interface.
+#' @return Formula, corresponding to the Boruta results.
+#' \code{getConfirmedFormula} returns only Confirmed attributes, \code{getNonRejectedFormula} also adds Tentative ones.
+#' @note This operation is possible only when Boruta selection was invoked using a formula interface.
+#' @rdname getFormulae
+#' @export
 getConfirmedFormula<-function(x){
   if(!inherits(x,'Boruta'))
     stop('This function needs Boruta object as an argument.')
@@ -445,6 +532,8 @@ getConfirmedFormula<-function(x){
   return(stats::as.formula(sprintf('%s~%s',dec,preds)))
 }
 
+#' @rdname getFormulae
+#' @export
 getNonRejectedFormula<-function(x){
   if(!inherits(x,'Boruta'))
     stop('This function needs Boruta object as an argument.')
@@ -454,5 +543,3 @@ getNonRejectedFormula<-function(x){
   preds<-paste(names(x$finalDecision)[x$finalDecision!='Rejected'],collapse="+")
   return(stats::as.formula(sprintf('%s~%s',dec,preds)))
 }
-
-
