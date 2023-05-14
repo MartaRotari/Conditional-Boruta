@@ -14,16 +14,16 @@ An example of how to run the function and analyse the outcome of the algorithm c
 
 ## Summary
 The repository contains the following:
-1. 'boruta_conditional.R': function needs to be read with the R command 'source(boruta_conditional.R)'.
-2. 'example_howtouse.R': a simple example of how to use the function. 
+1. `boruta_conditional.R`: function needs to be read with the R command `source(boruta_conditional.R)`.
+2. `example_howtouse.R`: a simple example of how to use the function. 
 3. More details can be found in the [paper](document.pdf).
 4. The comparison of the model to the established methods and a suggestion on how to choose the [parameters](parameters_comparison.pdf). 
 
 
 ## Function Features
 The function file contains the following features:
-1.'Condition_Boruta(y ~ . , data = data, doTrace = 1, getImp=getImpRfCond)' algorithm function
-2. 'TentativeRoughFix()': the function that fixes the variables not yet classified
-3. 'getSelectedAttributes()': the function that gives the subset of the selected variables
-4. 'plotImpHistory()': the mean of the variable importance value calculated at each step of the algorithm
-5. 'plot.Boruta()': boxplot of the variables' conditional importance
+1. `Condition_Boruta(y ~ . , data = data, doTrace = 1, getImp=getImpRfCond)` algorithm function 
+2. `TentativeRoughFix()`: the function that fixes the variables not yet classified
+3. `getSelectedAttributes()`: the function that gives the subset of the selected variables
+4. `plotImpHistory()`: the mean of the variable importance value calculated at each step of the algorithm
+5. `plot.Boruta()`: boxplot of the variables' conditional importance
