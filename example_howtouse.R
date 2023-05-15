@@ -16,7 +16,7 @@ var_noise = 0.1
 noise = rnorm( n_data , mean = 0, sd = sqrt(var_noise) )
 X = cbind( data$X2, data$X7)
 
-# The simulated data are such that beta/sd(beta)=k, where k=(4,3) to ensure that the coefficients are statistically significant and appropriately scaled.
+# The simulated data are such that beta/sd(beta)=k, where k=(5,4) to ensure that the coefficients are statistically significant and appropriately scaled.
 var_beta = var_noise * solve( t(X)%*%X )
 sd_beta = sqrt( diag(var_beta) )
 ratio = c(5,4)  
@@ -26,8 +26,7 @@ data$y = beta[1]*data$X2 + beta[2]*data$X7 + noise
 
 ####  Run Conditional Boruta     
 source('boruta_conditional.R')
-cb_model = Condition_Boruta(y ~ ., data = data, doTrace = 1, getImp=getImpRfCond,mtry=20, ntree = 500)
-#cb_model <- Condition_Boruta(y ~ ., data = data, mtry=20, ntree = 500, doTrace = 1, getImp=getImpRfCond)
+cb_model = Condition_Boruta(y ~ ., data = data, doTrace = 1, getImp=getImpRfCond, mtry=20,ntree = 500)
 print(cb_model)
 
 # Decide on the unclassified variables

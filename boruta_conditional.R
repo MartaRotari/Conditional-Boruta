@@ -3,7 +3,7 @@ Condition_Boruta<-function(x,...)
   UseMethod("Boruta")
 
 
-Boruta.default<-function(x,y,pValue=0.01,mcAdj=TRUE,maxRuns=100,doTrace=0,holdHistory=TRUE,getImp=getImpRfCond,ntree=500,mtry=20,...){
+Boruta.default<-function(x,y,pValue=0.01,mcAdj=TRUE,maxRuns=100,doTrace=0,holdHistory=TRUE,getImp=getImpRfCond,ntree=500,mtry=round(sqrt(ncol(data-1)), 0),...){
   #Timer starts... now!
   timeStart<-Sys.time()
   
